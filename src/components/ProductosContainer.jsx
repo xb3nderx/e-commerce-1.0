@@ -1,38 +1,46 @@
-import { useState } from "react"
-import "../styles/Productos.css"
-import Card from "./Card"
-import Carrito from "./Carrito"
+import { useEffect, useState } from "react";
+import "../styles/Productos.css";
+import Card from "./Card";
 
-function ProductosContainer({productos}){
-    const [productosCarrito, setProductosCarrito] = useState([])
+function ProductosContainer({ functionCarrito }) {
+  const [productos, setProductos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
 
-    function funcionCarrito(producto){
-        console.log("Paso 2")
-        console.log(productosCarrito)
-        const nuevoCarrito = [...productosCarrito, producto]; // Solución 
-        setProductosCarrito(nuevoCarrito)
-        console.log(productosCarrito)
-    }
+  {
+    useEffect(() => {
+      fetch("https://68100d8b27f2fdac24101ef5.mockapi.io/productos")
+        .then((respuesta) => respuesta.json())
+        .then((datos) => {
+          console.log(datos);
+          setProductos(datos);
+          setCargando(false);
+        })
+        .catch((error) => {
+          console.log("Error", error);
+          setError("Hubo un problema al cargar los productos.");
+          setCargando(false);
+        });
+    }, []);
+  }
 
-    return(
-        <div>
-            <div className="productos-conteiner">
-                {productos.map((producto) => (
-                    <Card
-                        producto={producto}
-                        funcionCarrito={funcionCarrito}
-                    />
-                ))}
-            </div>
-{            <div className="carrito-conteiner">
-                <Carrito
-                    productos={productosCarrito}    
-                />
-            </div>}
-        </div>
-    )
+  function functionEnProductos(producto) {
+    functionCarrito(producto);
+  }
+
+  if (cargando) {
+    return <p>Cargando productos...</p>;
+  } else if (error) {
+    return <p>{error}</p>;
+  } else {
+    return (
+      <div className="productos-conteiner">
+        {productos.map((producto) => (
+          <Card producto={producto} funcionCarrito={functionEnProductos} />
+        ))}
+      </div>
+    );
+  }
 }
 
-
-export default ProductosContainer
-
+export default ProductosContainer;
